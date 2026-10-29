@@ -2,7 +2,7 @@
 
 LLADR grew out of doctoral fieldwork in the coconut economy of Keralam, India, during 2007-09, and renewed research there since 2023. Coconut was the entry point: a single commodity that connects agriculture, migration, labour relations, processing, trade, and household consumption. We now carry the same questions into toddy, handloom, and other rural industries.
 
-Our long-term objective is to establish a nuanced understanding of key development transitions influencing agrarian livelihood change, and rural labour dynamics in South India, while creating mechanisms for tangible contributions within communities, including policy briefs and training with industry and government bodies. Correspondence about any of this work, including from students and collaborators working on similar questions, is welcome.
+Our long-term objective is to establish a nuanced understanding of key development transitions influencing agrarian livelihood change, and rural labour dynamics in South India, while creating mechanisms for tangible contributions within communities, including policy briefs and training with industry and government bodies. Correspondence about any of this work, including from students and collaborators focusing on similar questions, is welcome.
 
 ## Current projects
 
