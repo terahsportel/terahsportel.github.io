@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLADR</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/LLADR_circle.png">
+    <!-- Include Marked.js to parse Markdown instantly in the browser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100%; 
+            height: 100%; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            overflow: hidden; 
+            background-color: #111; 
+            color: #fff; 
+        }
+        
+        /* Full-screen background slideshow */
+        .bg-container { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 0; 
+        }
+
+        .bg-slide { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-size: cover; 
+            background-position: center; 
+            opacity: 0; 
+            transition: opacity 1.5s ease-in-out; 
+        }
+
+        .bg-slide.active { opacity: 1; }
+
+        /* Dark overlay for contrast */
+        .overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.55); 
+            z-index: 1; 
+        }
+
+        /* Floating Watermark Logo (Bottom-Right Corner) - 130px */
+        .site-watermark {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            z-index: 10;
+            opacity: 0.65; 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: opacity 0.3s ease;
+        }
+
+        .site-watermark:hover {
+            opacity: 0.95; 
+        }
+
+        /* Corner Navigation Menu */
+        nav { 
+            position: fixed; 
+            top: 25px; 
+            right: 25px; 
+            z-index: 10; 
+            display: flex; 
+            gap: 12px; 
+            background: rgba(0, 0, 0, 0.4); 
+            backdrop-filter: blur(8px); 
+            padding: 8px 12px; 
+            border-radius: 30px; 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+        }
+
+        nav button { 
+            background: transparent; 
+            border: none; 
+            color: rgba(255, 255, 255, 0.7); 
+            font-size: 14px; 
+            font-weight: 500; 
+            cursor: pointer; 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            transition: all 0.2s ease; 
+        }
+
+        nav button:hover, nav button.active { 
+            color: #fff; 
+            background: rgba(255, 255, 255, 0.25); 
+        }
+
+        /* Content Area - Wider & Scrollable with Frosted Glass Look */
+        .content-wrapper { 
+            position: relative; 
+            z-index: 2; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            align-items: center; 
+            padding: 8vw; 
+            overflow-y: auto; 
+        }
+
+        .text-box { 
+            max-width: 800px; 
+            width: 100%;
+            max-height: 80vh; 
+            overflow-y: auto; 
+            padding: 40px; 
+            background: rgba(0, 0, 0, 0.55); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.8s ease forwards; 
+        }
+
+        /* Custom scrollbar */
+        .text-box::-webkit-scrollbar { width: 6px; }
+        .text-box::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+        .text-box::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 3px; }
+
+        /* Unified Typography & Spacing Fixes */
+        .text-box h1 {
+            font-size: clamp(2rem, 3.5vw, 2.8rem);
+            font-weight: 300;
+            line-height: 1.2;
+            margin-bottom: 28px; 
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Consistent spacing for section headings (h2) */
+        .text-box h2 {
+            font-size: 1.6rem;
+            font-weight: 400;
+            margin-top: 28px;
+            margin-bottom: 16px;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .text-box p {
+            font-size: 1.05rem;
+            line-height: 1.7; 
+            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        /* URL / Link Styling set to #87ceec */
+        .text-box a {
+            color: #87ceec;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .text-box a:hover {
+            text-decoration: underline;
+            opacity: 0.85;
+        }
+
+        /* Spacing and indentation for unordered (bullet) and ordered (numbered) lists */
+        .text-box ul, 
+        .text-box ol {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+
+        .text-box li {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Team Page Specific Layout Styles */
+        .team-member {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            margin-bottom: 35px;
+        }
+
+        .team-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .team-info h2 {
+            font-size: 1.6rem;
+            font-weight: 400;
+            margin-top: 0;
+            margin-bottom: 4px;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .team-info h3 {
+            font-size: 1.05rem;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .team-info p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Mobile Responsive Fixes (Only applies on screens 768px wide or smaller) */
+        @media (max-width: 768px) {
+            nav {
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+                width: calc(100% - 30px);
+                max-width: 420px;
+                justify-content: center;
+                padding: 6px 10px;
+                gap: 6px;
+            }
+
+            nav button {
+                font-size: 13px;
+                padding: 5px 10px;
+            }
+
+            .content-wrapper {
+                align-items: flex-start; 
+                padding-top: 115px;       
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-bottom: 40px;
+            }
+
+            .text-box {
+                max-height: none;        
+                padding: 25px;           
+            }
+
+            .team-member {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-container" id="bgContainer"></div>
+    <div class="overlay"></div>
+
+    <!-- Floating Watermark Logo (130px) -->
+    <img src="images/LLADR_circle.png" alt="LLADR Logo" class="site-watermark">
+
+    <!-- Navigation Menu -->
+    <nav>
+        <button class="nav-btn active" onclick="loadPage('home.md', this)">Home</button>
+        <button class="nav-btn" onclick="loadPage('team.md', this)">Team</button>
+        <button class="nav-btn" onclick="loadPage('research.md', this)">Research</button>
+        <button class="nav-btn" onclick="loadPage('opportunities.md', this)">Opportunities</button>
+    </nav>
+
+    <main class="content-wrapper">
+        <div class="text-box" id="contentBox"><p>Loading...</p></div>
+    </main>
+
+    <script>
+        const imageFilenames = [
+            'PXL_20240508_123143202.MP.jpg', 'PXL_20240511_120225119.MP.jpg',
+            'PXL_20240528_023311299.MP.jpg', 'PXL_20240529_113956808.MP.jpg',
+            'PXL_20240616_063416309.MP.jpg', 'PXL_20240616_122017575.jpg',
+            'PXL_20240616_122023725.jpg', 'PXL_20250427_060003428.MP.jpg',
+            'PXL_20250427_060302162.MP.jpg', 'PXL_20250427_060521984.MP.jpg',
+            'PXL_20250427_062706508.MP.jpg', 'PXL_20250427_070223321.MP.jpg',
+            'PXL_20250502_020048225.MP.jpg', 'PXL_20250502_020137075.MP.jpg',
+            'PXL_20250510_052013376.MP.jpg', 'PXL_20250510_061222100.MP.jpg',
+            'PXL_20250526_132249298.MP.jpg', 'PXL_20250528_041116015.jpg',
+            'PXL_20250606_054749753.jpg', 'PXL_20250610_052307561.MP.jpg',
+            'PXL_20250612_050852365.MP.jpg', 'PXL_20250612_055025829.jpg',
+            'PXL_20250616_035134295.MP.jpg', 'PXL_20250616_035556430.jpg',
+            'PXL_20250617_024216579.MP.jpg', 'PXL_20250617_055817056.MP.jpg',
+            'PXL_20250617_061051696.jpg', 'PXL_20260408_014726433.MP.jpg',
+            'PXL_20260414_012926290.MP.jpg', 'PXL_20260421_042539236.jpg',
+            'PXL_20260421_130400043.jpg', 'PXL_20260427_050019353.jpg',
+            'PXL_20260427_050050092.jpg', 'PXL_20260427_050541723.jpg',
+            'PXL_20260427_054752423.jpg', 'PXL_20260428_064947064.jpg',
+            'PXL_20260428_070440155.jpg', 'PXL_20260503_030132427.jpg',
+            'PXL_20260524_033840750.jpg'
+        ];
+
+        function initBackgrounds() {
+            const baseFolder = 'images/';
+            const bgContainer = document.getElementById('bgContainer');
+            const images = imageFilenames.map(file => baseFolder + file);
+
+            images.forEach((src, idx) => {
+                const slide = document.createElement('div');
+                slide.className = `bg-slide ${idx === 0 ? 'active' : ''}`;
+                slide.style.backgroundImage = `url("${src}")`;
+                bgContainer.appendChild(slide);
+            });
+
+            if (images.length > 1) {
+                let currentIndex = 0;
+                setInterval(() => {
+                    const slides = bgContainer.querySelectorAll('.bg-slide');
+                    if(slides.length > 0) {
+                        slides[currentIndex].classList.remove('active');
+                        currentIndex = (currentIndex + 1) % images.length;
+                        slides[currentIndex].classList.add('active');
+                    }
+                }, 5000);
+            }
+        }
+
+        async function loadPage(mdFile, btnElement) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            const contentBox = document.getElementById('contentBox');
+            contentBox.style.opacity = '0';
+
+            const baseFolder = './';
+
+            try {
+                const response = await fetch(baseFolder + mdFile);
+                if (!response.ok) throw new Error('File not found');
+                const markdownText = await response.text();
+                
+                setTimeout(() => {
+                    contentBox.innerHTML = marked.parse(markdownText);
+
+                    if (mdFile === 'team.md') {
+                        formatTeamPage(contentBox);
+                    }
+
+                    contentBox.style.opacity = '1';
+                }, 200);
+            } catch (error) {
+                setTimeout(() => {
+                    contentBox.innerHTML = `<h1>Error</h1><p>Could not load ${mdFile}. Ensure the markdown file exists in your repository root.</p>`;
+                    contentBox.style.opacity = '1';
+                }, 200);
+            }
+        }
+
+        function formatTeamPage(container) {
+            const children = Array.from(container.children);
+            container.innerHTML = '';
+            
+            let currentMember = null;
+            let memberIndex = 0;
+            
+            children.forEach(child => {
+                if (child.tagName === 'H1') {
+                    container.appendChild(child);
+                } else if (child.tagName === 'H2') {
+                    memberIndex++;
+                    currentMember = document.createElement('div');
+                    currentMember.className = 'team-member';
+                    
+                    const nameText = child.textContent.trim();
+                    const slug = nameText.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    
+                    const baseFolder = 'images/';
+                    const img = document.createElement('img');
+                    img.src = baseFolder + `${slug}.jpg`;
+                    img.alt = nameText;
+                    img.className = 'team-avatar';
+                    img.onerror = () => { img.src = baseFolder + 'team-default.jpg'; };
+                    
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'team-info';
+                    infoDiv.appendChild(child);
+                    
+                    currentMember.appendChild(img);
+                    currentMember.appendChild(infoDiv);
+                    container.appendChild(currentMember);
+                } else if (currentMember) {
+                    currentMember.querySelector('.team-info').appendChild(child);
+                } else {
+                    container.appendChild(child);
+                }
+            });
+        }
+
+        window.onload = () => {
+            initBackgrounds();
+            loadPage('home.md', document.querySelector('.nav-btn'));
+        };
+    </script>
+</body>
+</html>
